@@ -131,41 +131,51 @@ grub_TPM_efi_hashLogExtendEvent(const grub_uint8_t * inDigest, grub_uint8_t pcrI
 {
 	//TPM TESTING
 	grub_printf(" grub_TPM_efi_hashLogExtendEvent \n");
-	grub_efi_status_t status;
-	efi_tpm_protocol_t *tpm;
+	
+//	grub_efi_status_t status;
+//	efi_tpm_protocol_t *tpm;
 
-        grub_uint32_t algorithm, eventnum = 0;
-	grub_addr_t lastevent;
-	Event* event;
+//        grub_uint32_t algorithm, eventnum = 0;
+//	grub_addr_t lastevent;
+//	Event* event;
 
 	//tpm = grub_efi_locate_protocol(&tpm_guid, (void **)&tpm);
-	tpm = grub_efi_locate_protocol(&tpm_guid, 0);
+//	tpm = grub_efi_locate_protocol(&tpm_guid, 0);
 
-	if (!tpm_present(tpm)) {
-		grub_fatal ( "grub_TPM not present._hashlogextendevent");
-		return EFI_SUCCESS;
-	}
+//	if (!tpm_present(tpm)) {
+//		grub_fatal ( "grub_TPM not present._hashlogextendevent");
+//		return EFI_SUCCESS;
+//	}
 
 	// Prepare Event struct
-	grub_uint32_t strSize = grub_strlen(descriptions);
-	grub_uint32_t eventStructSize = strSize + sizeof(Event);
-	event = grub_zalloc(eventStructSize);
+//	grub_uint32_t strSize = grub_strlen(descriptions);
+//	grub_uint32_t eventStructSize = strSize + sizeof(Event);
+//	event = grub_zalloc(eventStructSize);
 
-	if (!event)
-	{
-		grub_fatal( "grub_TPM_efi_hashLogExtendEvent: memory allocation failed" );
+//	if (!event)
+//	{
+//		grub_fatal( "grub_TPM_efi_hashLogExtendEvent: memory allocation failed" );
+//	}
+
+	//event->pcrIndex = pcrIndex;
+	//MOIDFIED 
+	grub_uint8_t ptt = pcrIndex;
+	const grub_uint8_t * tt = inDigest;
+	const char* tttt= descriptions;
+
+	if(ptt && tt && tttt){
+		return EFI_SUCCESS;
 	}
+	return EFI_SUCCESS;
+//	event->eventType = 0x0d; // EV_IPL
+//	event->eventDataSize = strSize + 1;
+//	algorithm = 0x00000004;
 
-	event->pcrIndex = pcrIndex;
-	event->eventType = 0x0d; // EV_IPL
-	event->eventDataSize = strSize + 1;
-	algorithm = 0x00000004;
+//	status = efi_call_6(tpm->log_extend_event, inDigest,
+  //                                         (grub_uint64_t)eventStructSize, algorithm, event,
+    //                                       &eventnum, &lastevent);
 
-	status = efi_call_6(tpm->log_extend_event, inDigest,
-                                           (grub_uint64_t)eventStructSize, algorithm, event,
-                                           &eventnum, &lastevent);
-
-	return status;
+//	return status;*/
 }
 /************************* non-static functions *************************/
 
@@ -265,8 +275,8 @@ grub_TPM_efi_passThroughToTPM
 {
 	//TPM TESTING
 	grub_printf("grub_TPM_efi_passThroughToTPM \n");
-	grub_efi_status_t status;
-	efi_tpm_protocol_t *tpm = NULL;
+	//grub_efi_status_t status;
+	//efi_tpm_protocol_t *tpm = NULL;
 
 	CHECK_FOR_NULL_ARGUMENT( input );
 	CHECK_FOR_NULL_ARGUMENT( output );
@@ -274,7 +284,8 @@ grub_TPM_efi_passThroughToTPM
 	if ( ! input->IPBLength || ! input->OPBLength ) {
 		 grub_fatal( "tcg_passThroughToTPM: ! input->IPBLength || ! input->OPBLength" );
 	}
-	//status= grub_efi_locate_protocol(&tpm_guid, (void **)&tpm);
+	return EFI_SUCCESS;
+/*	//status= grub_efi_locate_protocol(&tpm_guid, (void **)&tpm);
 	tpm = grub_efi_locate_protocol(&tpm_guid, 0);
 	if (tpm == NULL) {
 		grub_fatal ( "grub_TPM not present._passthroughtoTPM");
@@ -288,7 +299,7 @@ grub_TPM_efi_passThroughToTPM
 	status = efi_call_4 (tpm->pass_through_to_tpm,
 				input->IPBLength, &input->TPMOperandIn[0],
 				input->OPBLength, &output->TPMOperandOut[0]);
-	return status;
+	return status;*/
 }
 
 /* grub_fatal() on error */
