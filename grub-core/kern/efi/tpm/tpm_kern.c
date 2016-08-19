@@ -132,6 +132,8 @@ grub_TPM_efi_hashLogExtendEvent(const grub_uint8_t * inDigest, grub_uint8_t pcrI
 {
 	//TPM TESTING
 	grub_printf(" grub_TPM_efi_hashLogExtendEvent \n");
+/* Modified to bypass tpm present
+
 	grub_efi_status_t status;
 	efi_tpm_protocol_t *tpm;
 
@@ -167,6 +169,15 @@ grub_TPM_efi_hashLogExtendEvent(const grub_uint8_t * inDigest, grub_uint8_t pcrI
                                            &eventnum, &lastevent);
 
 	return status;
+	*/
+	const grub_uint8_t *t =inDigest;
+	grub_uint8_t tt = pcrIndex;
+	const char* ttt =  descriptions;
+
+	if(t && tt && ttt){
+		return EFI_SUCCESS;
+	}
+	return EFI_SUCCESS;
 }
 /************************* non-static functions *************************/
 
@@ -289,8 +300,8 @@ grub_TPM_efi_passThroughToTPM
 {
 	//TPM TESTING
 	grub_printf("grub_TPM_efi_passThroughToTPM \n");
-	grub_efi_status_t status;
-	efi_tpm_protocol_t *tpm = NULL;
+	//grub_efi_status_t status;
+	//efi_tpm_protocol_t *tpm = NULL;
 
 	CHECK_FOR_NULL_ARGUMENT( input );
 	CHECK_FOR_NULL_ARGUMENT( output );
@@ -298,6 +309,7 @@ grub_TPM_efi_passThroughToTPM
 	if ( ! input->IPBLength || ! input->OPBLength ) {
 		 grub_fatal( "tcg_passThroughToTPM: ! input->IPBLength || ! input->OPBLength" );
 	}
+	/*MODIFIED TO bypass TPM CHECK
 	//status= grub_efi_locate_protocol(&tpm_guid, (void **)&tpm);
 	tpm = grub_efi_locate_protocol(&tpm_guid, 0);
 	if (tpm == NULL) {
@@ -313,6 +325,8 @@ grub_TPM_efi_passThroughToTPM
 				input->IPBLength, &input->TPMOperandIn[0],
 				input->OPBLength, &output->TPMOperandOut[0]);
 	return status;
+	*/
+	return EFI_SUCCESS;
 }
 
 /* grub_fatal() on error */
