@@ -160,7 +160,7 @@ grub_TPM_efi_hashLogExtendEvent(const grub_uint8_t * inDigest, grub_uint8_t pcrI
 
 	// Prepare Event struct
 	grub_uint32_t strSize = grub_strlen(descriptions);
-	grub_uint32_t eventStructSize = strSize + sizeof(Event);
+	grub_uint32_t eventStructSize = strSize + sizeof(Event)+1;
 	event = grub_zalloc(eventStructSize);
 
 	if (!event)
@@ -171,6 +171,7 @@ grub_TPM_efi_hashLogExtendEvent(const grub_uint8_t * inDigest, grub_uint8_t pcrI
 	event->pcrIndex = pcrIndex;
 	event->eventType = 0x0d; // EV_IPL
 	event->eventDataSize = strSize + 1;
+	grub_memcpy(&event->event[0], descriptions, strSize+1);
 	algorithm = 0x00000004;
 
 	status = efi_call_7(tpm->log_extend_event, tpm, inDigest,
