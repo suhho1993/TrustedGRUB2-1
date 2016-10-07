@@ -41,7 +41,7 @@ grub_linuxefi_secure_validate (void *data, grub_uint32_t size)
 
   shim_lock = grub_efi_locate_protocol(&guid, NULL);
 
-  if (!shim) return 1;
+  if (!shim_lock) return 1;
   if (shim_lock->verify(data, size) == GRUB_EFI_SUCCESS) return 1;
   return 0;
 }
