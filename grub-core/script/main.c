@@ -20,12 +20,19 @@
 #include <grub/i18n.h>
 #include <grub/parser.h>
 #include <grub/script_sh.h>
+/* Begin TCG Extension */
+#include <grub/tpm.h>
+/* End TCG Extension */
 
 grub_err_t
 grub_normal_parse_line (char *line,
 			grub_reader_getline_t getline, void *getline_data)
 {
   struct grub_script *parsed_script;
+
+  /* Begin TCG Extension */
+  grub_TPM_measure_buffer( line, grub_strlen(line), TPM_COMMAND_MEASUREMENT_PCR);
+  /* End TCG Extension */
 
   /* Parse the script.  */
   parsed_script = grub_script_parse (line, getline, getline_data);

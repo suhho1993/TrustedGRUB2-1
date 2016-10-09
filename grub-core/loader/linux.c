@@ -162,9 +162,6 @@ grub_initrd_init (int argc, char *argv[],
 
   initrd_ctx->size = 0;
 
-  //TPM testing
-  grub_printf("initrd init\n");
-
   for (i = 0; i < argc; i++)
     {
       const char *fname = argv[i];
@@ -297,9 +294,6 @@ grub_initrd_load (struct grub_linux_initrd_context *initrd_ctx,
 	  return grub_errno;
 	}
 
-      //Modified for efi testing
-
-      grub_dprintf("linux","in linux.c before TPM measure buffer\n");
       /* Begin TCG Extension */
       grub_TPM_measure_buffer( ptr, cursize, TPM_LOADER_MEASUREMENT_PCR );
       /* End TCG Extension */
