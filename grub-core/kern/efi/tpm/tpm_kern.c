@@ -130,8 +130,6 @@ BOOLEAN tpm_present(efi_tpm_protocol_t *tpm)
 grub_efi_status_t
 grub_TPM_efi_hashLogExtendEvent(const grub_uint8_t * inDigest, grub_uint8_t pcrIndex, const char* descriptions )
 {
-	//TPM TESTING
-	grub_printf(" grub_TPM_efi_hashLogExtendEvent \n");
 	grub_efi_status_t status;
 	efi_tpm_protocol_t *tpm;
 
@@ -282,8 +280,6 @@ grub_TPM_readpcr( const grub_uint8_t index, grub_uint8_t* result ) {
 grub_err_t
 grub_TPM_efi_statusCheck( grub_uint32_t* returnCode, const grub_uint8_t* major, const grub_uint8_t* minor, grub_uint32_t* featureFlags, grub_addr_t *eventLog, grub_addr_t *edi )
 {
-	//TPM TESTING
-	grub_printf("grub_TPM_efi_statusCheck \n");
 	efi_tpm_protocol_t *tpm;
 	grub_efi_status_t status;
 	TCG_EFI_BOOT_SERVICE_CAPABILITY caps;
@@ -335,8 +331,6 @@ grub_efi_status_t
 grub_TPM_efi_passThroughToTPM
 	(const PassThroughToTPM_InputParamBlock* input, PassThroughToTPM_OutputParamBlock* output )
 {
-	//TPM TESTING
-	grub_printf("grub_TPM_efi_passThroughToTPM \n");
 	grub_efi_status_t status;
 	efi_tpm_protocol_t *tpm = NULL;
 	grub_efi_handle_t *handles;
@@ -478,8 +472,6 @@ grub_TPM_measure_file( const char* filename, const grub_uint8_t index ) {
 void
 grub_TPM_measure_buffer( const void* buffer, const grub_uint32_t bufferLen, const grub_uint8_t index )
 {
-	//TPM TESTING
-	grub_printf("grub_TPM_measure_buffer start\n");
 	CHECK_FOR_NULL_ARGUMENT( buffer )
 
 	/* hash buffer */
