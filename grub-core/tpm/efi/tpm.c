@@ -126,6 +126,23 @@ typedef struct tdTCG_PCClientPCREventStruc {
 } GRUB_PACKED TCG_PCClientPCREvent;
 
 /************************* static functions *************************/
+char TPM_itoa64[16] = "0123456789ABCDEF";
+static void tpm_itochar(grub_uint8_t* input, char* output, grub_uint32_t length){
+	int i=0;
+	int len = length;
+	len++;
+	grub_uint8_t tmp =0;
+	grub_uint8_t a,b;
+	int c =0;
+	for(i=0;i<20;i++){
+		tmp=input[i];
+		a = tmp & 0xf0;
+		a = a >> 4;
+		b = tmp & 0x0f;
+		output[c++]= TPM_itoa64[a];
+		output[c++] = TPM_itoa64[b];
+	}
+}
 
 /* grub_fatal() on error */
 static grub_err_t
@@ -148,14 +165,21 @@ grub_cmd_readpcr( grub_command_t cmd __attribute__ ((unused)), int argc, char **
 		grub_fatal( "grub_cmd_readpcr: invalid format for index" );
 		return GRUB_ERR_NONE;
 	}
+	char testing[40];
+	grub_memset(testing,0,sizeof(testing));
 
 	grub_uint8_t result[SHA1_DIGEST_SIZE] = { 0 };
 	grub_TPM_readpcr( index, &result[0] );
 
+	tpm_itochar(result,testing,20);
+	grub_printf( "read value PCR = ");
+	grub_printf(testing);
+	grub_printf("\n");
+
+
 	grub_printf( "read value PCR[%lu]=", index );
 	print_sha1( result );
 	grub_printf("\n");
-
 	return GRUB_ERR_NONE;
 }
 
