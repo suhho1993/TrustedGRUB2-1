@@ -110,13 +110,10 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/acpi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
-<<<<<<< HEAD
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sha1.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pc/tpm.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/tpm.h
-=======
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pmtimer.h
->>>>>>> master
 endif
 
 if COND_i386_coreboot
@@ -172,14 +169,12 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/acpi.h
-<<<<<<< HEAD
 
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sha1.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/tpm.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/tpm.h
-=======
+
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pmtimer.h
->>>>>>> master
 endif
 
 if COND_ia64_efi

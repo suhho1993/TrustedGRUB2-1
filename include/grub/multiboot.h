@@ -41,7 +41,8 @@ typedef enum
     GRUB_MULTIBOOT_QUIRK_BAD_KLUDGE = 1,
     GRUB_MULTIBOOT_QUIRK_MODULES_AFTER_KERNEL = 2
   } grub_multiboot_quirks_t;
-extern grub_multiboot_quirks_t grub_multiboot_quirks;
+
+extern grub_multiboot_quirks_t grub_multiboot_quirksi_t;
 #endif
 
 extern struct grub_relocator *grub_multiboot_relocator;
