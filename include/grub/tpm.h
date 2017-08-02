@@ -43,9 +43,9 @@ typedef enum { false = 0, true = 1 } BOOLEAN;
 /************************* macros *************************/
 
 #ifdef TGRUB_DEBUG
-	#define DEBUG_PRINT( x ) grub_printf x
+    #define DEBUG_PRINT( x ) grub_printf x
 #else
-	#define DEBUG_PRINT( x )
+    #define DEBUG_PRINT( x )
 #endif
 
 /************************* functions *************************/
@@ -53,12 +53,17 @@ typedef enum { false = 0, true = 1 } BOOLEAN;
 /* print SHA1 hash of input */
 void EXPORT_FUNC(print_sha1) ( grub_uint8_t* inDigest );
 
-/* 	Measure string */
+/*  Measure string */
 void EXPORT_FUNC(grub_TPM_measure_string) ( const char* string );
-/* 	Measure file */
+/*  Measure file */
 void EXPORT_FUNC(grub_TPM_measure_file) ( const char* filename, const grub_uint8_t index );
+<<<<<<< HEAD
 /* 	Measure buffer */
 void EXPORT_FUNC(grub_TPM_measure_buffer) ( const void* buffer, const grub_uint32_t bufferLen, const grub_uint8_t index );
+=======
+/*  Measure buffer */
+void EXPORT_FUNC(grub_TPM_measure_buffer) ( const void* buffer, grub_uint32_t bufferLen, const grub_uint8_t index );
+>>>>>>> master
 
 void EXPORT_FUNC(grub_TPM_readpcr) ( const grub_uint8_t index, grub_uint8_t* result );
 

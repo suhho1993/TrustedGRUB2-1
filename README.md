@@ -1,11 +1,13 @@
 # TrustedGRUB2
 
-[![Build Status](https://travis-ci.org/Sirrix-AG/TrustedGRUB2.svg?branch=master)](https://travis-ci.org/Sirrix-AG/TrustedGRUB2)
+[![Build Status](https://travis-ci.org/Rohde-Schwarz-Cybersecurity/TrustedGRUB2.svg?branch=master)](https://travis-ci.org/Rohde-Schwarz-Cybersecurity/TrustedGRUB2)
 
-<a href="https://scan.coverity.com/projects/5521">
+<a href="https://scan.coverity.com/projects/rohde-schwarz-cybersecurity-trustedgrub2">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/5521/badge.svg"/>
 </a>
+
+[![Quality Gate](https://sonarqube.com/api/badges/gate?key=TrustedGRUB2)](https://sonarqube.com/dashboard/index/TrustedGRUB2)
 
 ## 1. General Information
 
@@ -20,7 +22,7 @@ This can only be done indirectly by using the seal/unseal functions of the TPM (
 
 ### 1.2 Features
 
-* Based on GRUB2 (master branch, last merge: 23.12.2015)
+* Based on GRUB 2.02
 * TPM Support with TPM detection (only legacy/mbr mode, UEFI is not supported at the moment)
 * Measurement of GRUB2 kernel
 * Measurement of all loaded GRUB2 modules
