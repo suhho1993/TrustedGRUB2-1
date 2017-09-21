@@ -42,173 +42,136 @@ grub_efi_status_t tpm_log_event(grub_addr_t buf, grub_uint64_t size, grub_uint8_
                                 grub_fatal( "BAD_ARGUMENT: argument is NULL" );                                 \
                         }
 
-/************************* struct typedefs *************************/
+#ifndef GRUB_EFI_TPM_HEADER
+#define GRUB_EFI_TPM_HEADER 1
 
 typedef struct {
-  grub_uint8_t Major;
-  grub_uint8_t Minor;
-  grub_uint8_t RevMajor;
-  grub_uint8_t RevMinor;
+  grub_efi_uint8_t Major;
+  grub_efi_uint8_t Minor;
+  grub_efi_uint8_t RevMajor;
+  grub_efi_uint8_t RevMinor;
 } TCG_VERSION;
 
 typedef struct _TCG_EFI_BOOT_SERVICE_CAPABILITY {
-  grub_uint8_t          Size;                /// Size of this structure.
+  grub_efi_uint8_t          Size;                /// Size of this structure.
   TCG_VERSION    StructureVersion;
   TCG_VERSION    ProtocolSpecVersion;
-  grub_uint8_t          HashAlgorithmBitmap; /// Hash algorithms .
+  grub_efi_uint8_t          HashAlgorithmBitmap; /// Hash algorithms .
   char        TPMPresentFlag;      /// 00h = TPM not present.
   char        TPMDeactivatedFlag;  /// 01h = TPM currently deactivated.
 } TCG_EFI_BOOT_SERVICE_CAPABILITY;
 
-typedef struct _TCG_PCR_EVENT {
-  grub_uint32_t PCRIndex;
-  grub_uint32_t EventType;
-  grub_uint8_t digest[20];
-  grub_uint32_t EventSize;
-  grub_uint8_t  Event[1];
+typedef struct {
+  grub_efi_uint32_t PCRIndex;
+  grub_efi_uint32_t EventType;
+  grub_efi_uint8_t digest[20];
+  grub_efi_uint32_t EventSize;
+  grub_efi_uint8_t  Event[1];
 } TCG_PCR_EVENT;
 
-struct efi_tpm_protocol
+struct grub_efi_tpm_protocol
 {
-  grub_efi_status_t (EFIAPI *status_check) (struct efi_tpm_protocol *this,
+  grub_efi_status_t (*status_check) (struct grub_efi_tpm_protocol *this,
 				     TCG_EFI_BOOT_SERVICE_CAPABILITY *ProtocolCapability,
-				     grub_uint32_t *TCGFeatureFlags,
-				     grub_addr_t *EventLogLocation,
-				     grub_addr_t *EventLogLastEntry);
-  grub_efi_status_t (EFIAPI *hash_all) (struct efi_tpm_protocol *this,
-				 grub_uint8_t *HashData,
-				 grub_uint64_t HashLen,
-				 grub_uint32_t AlgorithmId,
-				 grub_uint64_t *HashedDataLen,
-				 grub_uint8_t **HashedDataResult);
-  grub_efi_status_t (EFIAPI *log_event) (struct efi_tpm_protocol *this,
+				     grub_efi_uint32_t *TCGFeatureFlags,
+				     grub_efi_physical_address_t *EventLogLocation,
+				     grub_efi_physical_address_t *EventLogLastEntry);
+  grub_efi_status_t (*hash_all) (struct grub_efi_tpm_protocol *this,
+				 grub_efi_uint8_t *HashData,
+				 grub_efi_uint64_t HashLen,
+				 grub_efi_uint32_t AlgorithmId,
+				 grub_efi_uint64_t *HashedDataLen,
+				 grub_efi_uint8_t **HashedDataResult);
+  grub_efi_status_t (*log_event) (struct grub_efi_tpm_protocol *this,
 				  TCG_PCR_EVENT *TCGLogData,
-				  grub_uint32_t *EventNumber,
-				  grub_uint32_t Flags);
-  grub_efi_status_t (EFIAPI *pass_through_to_tpm) (struct efi_tpm_protocol *this,
-					    grub_uint32_t TpmInputParameterBlockSize,
-					    grub_uint8_t *TpmInputParameterBlock,
-					    grub_uint32_t TpmOutputParameterBlockSize,
-					    grub_uint8_t *TpmOutputParameterBlock);
-  grub_efi_status_t (EFIAPI *log_extend_event) (struct efi_tpm_protocol *this,
-					 grub_addr_t HashData,
-					 grub_uint64_t HashDataLen,
-					 grub_uint32_t AlgorithmId,
+				  grub_efi_uint32_t *EventNumber,
+				  grub_efi_uint32_t Flags);
+  grub_efi_status_t (*pass_through_to_tpm) (struct grub_efi_tpm_protocol *this,
+					    grub_efi_uint32_t TpmInputParameterBlockSize,
+					    grub_efi_uint8_t *TpmInputParameterBlock,
+					    grub_efi_uint32_t TpmOutputParameterBlockSize,
+					    grub_efi_uint8_t *TpmOutputParameterBlock);
+  grub_efi_status_t (*log_extend_event) (struct grub_efi_tpm_protocol *this,
+					 grub_efi_physical_address_t HashData,
+					 grub_efi_uint64_t HashDataLen,
+					 grub_efi_uint32_t AlgorithmId,
 					 TCG_PCR_EVENT *TCGLogData,
-					 grub_uint32_t *EventNumber,
-					 grub_addr_t *EventLogLastEntry);
+					 grub_efi_uint32_t *EventNumber,
+					 grub_efi_physical_address_t *EventLogLastEntry);
 };
 
-typedef struct efi_tpm_protocol efi_tpm_protocol_t;
+typedef struct grub_efi_tpm_protocol grub_efi_tpm_protocol_t;
 
-typedef grub_uint32_t EFI_TCG2_EVENT_LOG_BITMAP;
-typedef grub_uint32_t EFI_TCG2_EVENT_LOG_FORMAT;
-typedef grub_uint32_t EFI_TCG2_EVENT_ALGORITHM_BITMAP;
+typedef grub_efi_uint32_t EFI_TCG2_EVENT_LOG_BITMAP;
+typedef grub_efi_uint32_t EFI_TCG2_EVENT_LOG_FORMAT;
+typedef grub_efi_uint32_t EFI_TCG2_EVENT_ALGORITHM_BITMAP;
 
 typedef struct tdEFI_TCG2_VERSION {
-  grub_uint8_t Major;
-  grub_uint8_t Minor;
-} __attribute__ ((packed)) EFI_TCG2_VERSION;
-
-typedef struct tdEFI_TCG2_BOOT_SERVICE_CAPABILITY_1_0 {
-  grub_uint8_t Size;
-  EFI_TCG2_VERSION StructureVersion;
-  EFI_TCG2_VERSION ProtocolVersion;
-  EFI_TCG2_EVENT_ALGORITHM_BITMAP HashAlgorithmBitmap;
-  EFI_TCG2_EVENT_LOG_BITMAP SupportedEventLogs;
-  BOOLEAN TPMPresentFlag;
-  grub_uint16_t MaxCommandSize;
-  grub_uint16_t MaxResponseSize;
-  grub_uint32_t ManufacturerID;
-  grub_uint32_t NumberOfPcrBanks;
-  EFI_TCG2_EVENT_ALGORITHM_BITMAP ActivePcrBanks;
-} EFI_TCG2_BOOT_SERVICE_CAPABILITY_1_0;
+  grub_efi_uint8_t Major;
+  grub_efi_uint8_t Minor;
+} GRUB_PACKED EFI_TCG2_VERSION;
 
 typedef struct tdEFI_TCG2_BOOT_SERVICE_CAPABILITY {
-  grub_uint8_t Size;
+  grub_efi_uint8_t Size;
   EFI_TCG2_VERSION StructureVersion;
   EFI_TCG2_VERSION ProtocolVersion;
   EFI_TCG2_EVENT_ALGORITHM_BITMAP HashAlgorithmBitmap;
   EFI_TCG2_EVENT_LOG_BITMAP SupportedEventLogs;
-  BOOLEAN TPMPresentFlag;
-  grub_uint16_t MaxCommandSize;
-  grub_uint16_t MaxResponseSize;
-  grub_uint32_t ManufacturerID;
-  grub_uint32_t NumberOfPcrBanks;
+  grub_efi_boolean_t TPMPresentFlag;
+  grub_efi_uint16_t MaxCommandSize;
+  grub_efi_uint16_t MaxResponseSize;
+  grub_efi_uint32_t ManufacturerID;
+  grub_efi_uint32_t NumberOfPcrBanks;
   EFI_TCG2_EVENT_ALGORITHM_BITMAP ActivePcrBanks;
-} __attribute__ ((packed))  EFI_TCG2_BOOT_SERVICE_CAPABILITY;
+} EFI_TCG2_BOOT_SERVICE_CAPABILITY;
 
-typedef grub_uint32_t TCG_PCRINDEX;
-typedef grub_uint32_t TCG_EVENTTYPE;
+typedef grub_efi_uint32_t TCG_PCRINDEX;
+typedef grub_efi_uint32_t TCG_EVENTTYPE;
 
 typedef struct tdEFI_TCG2_EVENT_HEADER {
-  grub_uint32_t HeaderSize;
-  grub_uint16_t HeaderVersion;
+  grub_efi_uint32_t HeaderSize;
+  grub_efi_uint16_t HeaderVersion;
   TCG_PCRINDEX PCRIndex;
   TCG_EVENTTYPE EventType;
-} __attribute__ ((packed)) EFI_TCG2_EVENT_HEADER;
+} GRUB_PACKED EFI_TCG2_EVENT_HEADER;
 
 typedef struct tdEFI_TCG2_EVENT {
-  grub_uint32_t Size;
+  grub_efi_uint32_t Size;
   EFI_TCG2_EVENT_HEADER Header;
-  grub_uint8_t Event[1];
-} __attribute__ ((packed)) EFI_TCG2_EVENT;
+  grub_efi_uint8_t Event[1];
+} GRUB_PACKED EFI_TCG2_EVENT;
 
-struct efi_tpm2_protocol
+struct grub_efi_tpm2_protocol
 {
-  grub_efi_status_t (EFIAPI *get_capability) (struct efi_tpm2_protocol *this,
+  grub_efi_status_t (*get_capability) (struct grub_efi_tpm2_protocol *this,
 				       EFI_TCG2_BOOT_SERVICE_CAPABILITY *ProtocolCapability);
-  grub_efi_status_t (EFIAPI *get_event_log) (struct efi_tpm2_protocol *this,
+  grub_efi_status_t (*get_event_log) (struct grub_efi_tpm2_protocol *this,
 				      EFI_TCG2_EVENT_LOG_FORMAT EventLogFormat,
-				      grub_addr_t *EventLogLocation,
-				      grub_addr_t *EventLogLastEntry,
-				      BOOLEAN *EventLogTruncated);
-  grub_efi_status_t (EFIAPI *hash_log_extend_event) (struct efi_tpm2_protocol *this,
-					      grub_uint64_t Flags,
-					      grub_addr_t DataToHash,
-					      grub_uint64_t DataToHashLen,
+				      grub_efi_physical_address_t *EventLogLocation,
+				      grub_efi_physical_address_t *EventLogLastEntry,
+				      grub_efi_boolean_t *EventLogTruncated);
+  grub_efi_status_t (*hash_log_extend_event) (struct grub_efi_tpm2_protocol *this,
+					      grub_efi_uint64_t Flags,
+					      grub_efi_physical_address_t *DataToHash,
+					      grub_efi_uint64_t DataToHashLen,
 					      EFI_TCG2_EVENT *EfiTcgEvent);
-  grub_efi_status_t (EFIAPI *submit_command) (struct efi_tpm2_protocol *this,
-				       grub_uint32_t InputParameterBlockSize,
-				       grub_uint8_t *InputParameterBlock,
-				       grub_uint32_t OutputParameterBlockSize,
-				       grub_uint8_t *OutputParameterBlock);
-  grub_efi_status_t (EFIAPI *get_active_pcr_blanks) (struct efi_tpm2_protocol *this,
-					      grub_uint32_t *ActivePcrBanks);
-  grub_efi_status_t (EFIAPI *set_active_pcr_banks) (struct efi_tpm2_protocol *this,
-					     grub_uint32_t ActivePcrBanks);
-  grub_efi_status_t (EFIAPI *get_result_of_set_active_pcr_banks) (struct efi_tpm2_protocol *this,
-							   grub_uint32_t *OperationPresent,
-							   grub_uint32_t *Response);
+  grub_efi_status_t (*submit_command) (struct grub_efi_tpm2_protocol *this,
+				       grub_efi_uint32_t InputParameterBlockSize,
+				       grub_efi_uint8_t *InputParameterBlock,
+				       grub_efi_uint32_t OutputParameterBlockSize,
+				       grub_efi_uint8_t *OutputParameterBlock);
+  grub_efi_status_t (*get_active_pcr_blanks) (struct grub_efi_tpm2_protocol *this,
+					      grub_efi_uint32_t *ActivePcrBanks);
+  grub_efi_status_t (*set_active_pcr_banks) (struct grub_efi_tpm2_protocol *this,
+					     grub_efi_uint32_t ActivePcrBanks);
+  grub_efi_status_t (*get_result_of_set_active_pcr_banks) (struct grub_efi_tpm2_protocol *this,
+							   grub_efi_uint32_t *OperationPresent,
+							   grub_efi_uint32_t *Response);
 };
 
-typedef struct efi_tpm2_protocol efi_tpm2_protocol_t;
+typedef struct grub_efi_tpm2_protocol grub_efi_tpm2_protocol_t;
 
-/* TCG_PassThroughToTPM Input Parameter Block */
-typedef struct {
-	grub_uint16_t IPBLength;
-	grub_uint16_t Reserved1;
-	grub_uint16_t OPBLength;
-	grub_uint16_t Reserved2;
-	grub_uint8_t TPMOperandIn[1];
-} GRUB_PACKED PassThroughToTPM_InputParamBlock;
+#define TCG_ALG_SHA 0x00000004
 
-/* TCG_PassThroughToTPM Output Parameter Block */
-typedef struct {
-	grub_uint16_t OPBLength;
-	grub_uint16_t Reserved;
-	grub_uint8_t TPMOperandOut[1];
-} GRUB_PACKED PassThroughToTPM_OutputParamBlock;
-
-/************************* functions *************************/
-
-/* Invokes TCG_StatusCheck */
-grub_err_t EXPORT_FUNC(grub_TPM_efi_statusCheck)( grub_uint32_t* returnCode, const grub_uint8_t* major, const grub_uint8_t* minor, grub_uint32_t* featureFlags, grub_addr_t* eventLog, grub_addr_t* edi);
-
-BOOLEAN EXPORT_FUNC(tpm_present)(efi_tpm_protocol_t *tpm);
-
-grub_efi_status_t EXPORT_FUNC(grub_TPM_efi_hashLogExtendEvent)(const grub_uint8_t * inDigest, grub_uint8_t pcrIndex, const char* descriptions );
-
-/* pass commands to TPM */
-grub_efi_status_t EXPORT_FUNC(grub_TPM_efi_passThroughToTPM) ( const PassThroughToTPM_InputParamBlock* input,
-		PassThroughToTPM_OutputParamBlock* output );
+#endif
+>>>>>>> 6782f6d431d22b4e9ab14e94d263795c7991e160

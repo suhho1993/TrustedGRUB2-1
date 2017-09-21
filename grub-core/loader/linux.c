@@ -4,6 +4,7 @@
 #include <grub/misc.h>
 #include <grub/file.h>
 #include <grub/mm.h>
+#include <grub/tpm.h>
 
 /* Begin TCG Extension */
 #include <grub/tpm.h>
@@ -300,9 +301,8 @@ grub_initrd_load (struct grub_linux_initrd_context *initrd_ctx,
       //Modified for efi testing
 
       grub_dprintf("linux","in linux.c before TPM measure buffer\n");
-      /* Begin TCG Extension */
-      grub_TPM_measure_buffer( ptr, cursize, TPM_LOADER_MEASUREMENT_PCR );
-      /* End TCG Extension */
+      grub_tpm_measure (ptr, cursize, GRUB_BINARY_PCR, "grub_initrd", "Initrd");
+      grub_print_error();
 
       ptr += cursize;
     }

@@ -32,6 +32,7 @@
 #include <grub/env.h>
 #include <grub/cache.h>
 #include <grub/i18n.h>
+#include <grub/tpm.h>
 
 /* Begin TCG Extension */
 #include <grub/tpm.h>
@@ -345,8 +346,11 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
     if (s->sh_type == SHT_SYMTAB)
       break;
 
+  /* Module without symbol table may still be used to pull in dependencies.
+     We verify at build time that such modules do not contain any relocations
+     that may reference symbol table. */
   if (i == e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
+    return GRUB_ERR_NONE;
 
 #ifdef GRUB_MODULES_MACHINE_READONLY
   mod->symtab = grub_malloc (s->sh_size);
@@ -588,6 +592,9 @@ grub_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
 	if (seg)
 	  {
+	    if (!mod->symtab)
+	      return grub_error (GRUB_ERR_BAD_MODULE, "relocation without symbol table");
+
 	    err = grub_arch_dl_relocate_symbols (mod, ehdr, s, seg);
 	    if (err)
 	      return err;
@@ -617,7 +624,7 @@ grub_dl_load_core_noinit (void *addr, grub_size_t size)
     }
 
   /* Make sure that every section is within the core.  */
-  if (size < e->e_shoff + e->e_shentsize * e->e_shnum)
+  if (size < e->e_shoff + (grub_uint32_t) e->e_shentsize * e->e_shnum)
     {
       grub_error (GRUB_ERR_BAD_OS, "ELF sections outside core");
       return 0;
@@ -702,6 +709,8 @@ grub_dl_load_file (const char *filename)
       grub_error (GRUB_ERR_ACCESS_DENIED,
 		  "Secure Boot forbids loading module from %s", filename);
 #endif
+      grub_error (GRUB_ERR_ACCESS_DENIED,
+		  "Secure Boot forbids loading module from %s", filename);
       return 0;
     }
 #endif
@@ -740,6 +749,9 @@ grub_dl_load_file (const char *filename)
 	  return 0;
   }
   grub_memcpy(measureModBuf, core, size);
+  
+  grub_tpm_measure(core, size, GRUB_BINARY_PCR, "grub_module", filename);
+  grub_print_error();
 
   mod = grub_dl_load_core (core, size);
   grub_free (core);

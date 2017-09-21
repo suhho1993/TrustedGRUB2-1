@@ -30,6 +30,7 @@
 /* Begin TCG Extension */
 #include <grub/tpm.h>
 /* End TCG Extension */
+#include <grub/verity-hash.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -43,19 +44,56 @@ struct linux_kernel_params *params;
 static char *linux_cmdline;
 
 #define BYTES_TO_PAGES(bytes)   (((bytes) + 0xfff) >> 12)
+#define SHIM_LOCK_GUID \
+  { 0x605dab50, 0xe046, 0x4300, {0xab, 0xb6, 0x3d, 0xd8, 0x10, 0xdd, 0x8b, 0x23} }
+
+struct grub_efi_shim_lock
+{
+  grub_efi_status_t (*verify) (void *buffer, grub_uint32_t size);
+};
+typedef struct grub_efi_shim_lock grub_efi_shim_lock_t;
+
+static grub_efi_boolean_t
+grub_linuxefi_secure_validate (void *data, grub_uint32_t size)
+{
+  grub_efi_guid_t guid = SHIM_LOCK_GUID;
+  grub_efi_shim_lock_t *shim_lock;
+
+  shim_lock = grub_efi_locate_protocol(&guid, NULL);
+
+  if (!shim_lock) {
+    if (grub_efi_secure_boot())
+      return 0;
+    else
+      return 1;
+  }
+
+  if (shim_lock->verify(data, size) == GRUB_EFI_SUCCESS)
+    return 1;
+
+  return 0;
+}
+
+typedef void(*handover_func)(void *, grub_efi_system_table_t *, struct linux_kernel_params *);
 
 static grub_err_t
 grub_linuxefi_boot (void)
 {
+  handover_func hf;
   int offset = 0;
 
 #ifdef __x86_64__
   offset = 512;
 #endif
+
+  hf = (handover_func)((char *)kernel_mem + handover_offset + offset);
+
   asm volatile ("cli");
 
-  return grub_efi_linux_boot ((char *)kernel_mem, handover_offset + offset,
-			      params);
+  hf (grub_efi_image_handle, grub_efi_system_table, params);
+
+  /* Not reached */
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -132,6 +170,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
                         argv[i]);
           goto fail;
         }
+      grub_tpm_measure (ptr, cursize, GRUB_BINARY_PCR, "grub_linuxefi", "Initrd");
+      grub_print_error();
       ptr += cursize;
       grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
       ptr += ALIGN_UP_OVERHEAD (cursize, 4);
@@ -194,9 +234,13 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  grub_tpm_measure (kernel, filelen, GRUB_BINARY_PCR, "grub_linuxefi", "Kernel");
+  grub_print_error();
+
   if (! grub_linuxefi_secure_validate (kernel, filelen))
     {
       grub_error (GRUB_ERR_INVALID_COMMAND, N_("%s has invalid signature"), argv[0]);
+      grub_free (kernel);
       goto fail;
     }
 
@@ -250,6 +294,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
                               linux_cmdline + sizeof (LINUX_IMAGE) - 1,
 			      lh.cmdline_size - (sizeof (LINUX_IMAGE) - 1));
 
+  grub_pass_verity_hash(&lh, linux_cmdline, lh.cmdline_size);
   lh.cmd_line_ptr = (grub_uint32_t)(grub_uint64_t)linux_cmdline;
 
   handover_offset = lh.handover_offset;
@@ -290,6 +335,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (kernel)
     grub_free (kernel);
+  grub_free (kernel);
 
   if (grub_errno != GRUB_ERR_NONE)
     {

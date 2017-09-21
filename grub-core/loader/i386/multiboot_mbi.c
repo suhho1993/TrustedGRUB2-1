@@ -36,6 +36,7 @@
 #include <grub/net.h>
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
+#include <grub/tpm.h>
 
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
@@ -70,9 +71,18 @@ load_kernel (grub_file_t file, const char *filename,
 	     char *buffer, struct multiboot_header *header)
 {
   grub_err_t err;
+  mbi_load_data_t mld;
+
+  mld.file = file;
+  mld.filename = filename;
+  mld.buffer = buffer;
+  mld.mbi_ver = 1;
+  mld.relocatable = 0;
+  mld.avoid_efi_boot_services = 0;
+
   if (grub_multiboot_quirks & GRUB_MULTIBOOT_QUIRK_BAD_KLUDGE)
     {
-      err = grub_multiboot_load_elf (file, filename, buffer);
+      err = grub_multiboot_load_elf (&mld);
       if (err == GRUB_ERR_NONE) {
 	return GRUB_ERR_NONE;
       }
@@ -121,7 +131,7 @@ load_kernel (grub_file_t file, const char *filename,
       return GRUB_ERR_NONE;
     }
 
-  return grub_multiboot_load_elf (file, filename, buffer);
+  return grub_multiboot_load_elf (&mld);
 }
 
 static struct multiboot_header *
@@ -163,6 +173,9 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 		    filename);
       return grub_errno;
     }
+
+  grub_tpm_measure((unsigned char*)buffer, len, GRUB_BINARY_PCR, "grub_multiboot", filename);
+  grub_print_error();
 
   header = find_header (buffer, len);
 

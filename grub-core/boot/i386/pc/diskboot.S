@@ -19,6 +19,8 @@
 #include <grub/symbol.h>
 #include <grub/machine/boot.h>
 
+#define TPM 1
+
 /*
  *  defines for the code go here
  */
@@ -88,6 +90,21 @@ _start:
 	/* write result to number_of_bytes_to_measure var */
 	movl	%eax, number_of_bytes_to_measure
 /* END TCG EXTENSION */
+
+#ifdef TPM
+        /* clear EAX to remove potential garbage */
+	xorl    %eax, %eax
+	/* 8(%di) = number of sectors to read */
+	movw    8(%di), %ax
+
+	/* Multiply number of sectors to read with 512 bytes. EAX is 32bit
+	* which is large enough to hold values of up to 4GB. I doubt there
+	* will ever be a core.img larger than that. ;-) */
+	shll    $9, %eax
+
+	/* write result to bytes_to_measure var */
+	movl    %eax, bytes_to_measure
+#endif
 
 	/* save the sector number of the second sector in %ebp */
 	movl	(%di), %ebp
@@ -326,6 +343,29 @@ LOCAL(copy_buffer):
 /* END OF MAIN LOOP */
 
 LOCAL(bootit):
+#ifdef TPM
+	pusha
+	movw	$0xBB07, %ax		/* TCG_CompactHashLogExtendEvent */
+
+	movw	$0x0, %bx
+	movw	%bx, %es
+
+	/* We've already measured the first 512 bytes, now measure the rest */
+	xorl	%edi, %edi
+	movw	$(GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200), %di
+
+	movl	$0x41504354, %ebx	/* EBX = "TCPA" */
+
+	/* %ecx = The length, in bytes, of the buffer to measure  */
+	movl	$bytes_to_measure, %esi
+	movl	(%esi), %ecx
+	xorl	%esi, %esi
+	movl	$0x9, %edx		/* PCR 9 */
+
+	int	$0x1A
+
+	popa
+#endif
 	/* print a newline */
 	MSG(notification_done)
 	popw	%dx	/* this makes sure %dl is our "boot" drive */
@@ -425,6 +465,10 @@ general_error_string:	.asciz " Error"
 tcg_error_string:	.string "TPM "
 number_of_bytes_to_measure: .long 0
 #endif /* ENABLE_TGRUB2 */
+
+#ifdef TPM
+bytes_to_measure:	.long 0
+#endif
 
 /*
  * message: write the string pointed to by %si

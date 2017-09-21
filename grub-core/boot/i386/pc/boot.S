@@ -24,13 +24,93 @@
  *  defines for the code go here
  */
 
-/* BEGIN TCG_Extension */
-	/* Changes particularly adapted from trustedgrub and GRUB-IMA */
-/* END TCG_Extension */
+#define TPM 1
 
 	/* Print message string */
 #define MSG(x)	movw $x, %si; call LOCAL(message)
 #define ERR(x)	movw $x, %si; jmp LOCAL(error_message)
+
+	.macro floppy
+#ifndef TPM
+part_start:
+
+LOCAL(probe_values):
+	.byte	36, 18, 15, 9, 0
+
+LOCAL(floppy_probe):
+	pushw	%dx
+/*
+ *  Perform floppy probe.
+ */
+#ifdef __APPLE__
+	LOCAL(probe_values_minus_one) = LOCAL(probe_values) - 1
+	movw	MACRO_DOLLAR(LOCAL(probe_values_minus_one)), %si
+#else
+	movw	MACRO_DOLLAR(LOCAL(probe_values)) - 1, %si
+#endif
+
+LOCAL(probe_loop):
+	/* reset floppy controller INT 13h AH=0 */
+	xorw	%ax, %ax
+	int	MACRO_DOLLAR(0x13)
+
+	incw	%si
+	movb	(%si), %cl
+
+	/* if number of sectors is 0, display error and die */
+	testb	%cl, %cl
+	jnz	1f
+
+/*
+ * Floppy disk probe failure.
+ */
+	MSG(fd_probe_error_string)
+	jmp	LOCAL(general_error)
+
+/* "Floppy" */
+fd_probe_error_string:	.asciz "Floppy"
+
+1:
+	/* perform read */
+	movw	MACRO_DOLLAR(GRUB_BOOT_MACHINE_BUFFER_SEG), %bx
+	movw	%bx, %es
+	xorw	%bx, %bx
+	movw	MACRO_DOLLAR(0x201), %ax
+	movb	MACRO_DOLLAR(0), %ch
+	movb	MACRO_DOLLAR(0), %dh
+	int	MACRO_DOLLAR(0x13)
+
+	/* if error, jump to "LOCAL(probe_loop)" */
+	jc	LOCAL(probe_loop)
+
+	/* %cl is already the correct value! */
+	movb	MACRO_DOLLAR(1), %dh
+	movb	MACRO_DOLLAR(79), %ch
+
+	jmp	LOCAL(final_init)
+#endif
+	.endm
+
+	.macro scratch
+
+	/* scratch space */
+mode:
+	.byte	0
+disk_address_packet:
+sectors:
+	.long	0
+heads:
+	.long	0
+cylinders:
+	.word	0
+sector_start:
+	.byte	0
+head_start:
+	.byte	0
+cylinder_start:
+	.word	0
+	/* more space... */
+	.endm
 
 	.file	"boot.S"
 
@@ -161,7 +241,7 @@ real_start:
 	movw	$disk_address_packet, %si
 
 /* BEGIN TCG_Extension */
-#ifndef ENABLE_TGRUB2
+#ifndef TPM
 	/* check if LBA is supported */
 	movb	$0x41, %ah
 	movw	$0x55aa, %bx
@@ -181,8 +261,8 @@ real_start:
 
 	andw	$1, %cx
 	jz	LOCAL(chs_mode)
-#endif /* ! ENABLE_TGRUB2 */
 /* END TCG Extension */
+#endif
 
 lba_mode:
 	xorw	%ax, %ax
@@ -226,12 +306,10 @@ lba_mode:
 	jmp	LOCAL(copy_buffer)
 
 LOCAL(chs_mode):
-/* BEGIN TCG_Extension */
-#ifdef ENABLE_TGRUB2
-	MSG(chs_no_support_string)
-	jmp     LOCAL(general_error)
-#else /* ! ENABLE_TGRUB2 */
-/* END TCG Extension */
+#ifdef TPM
+	jmp	LOCAL(general_error)
+#else
+>>>>>>> 6782f6d431d22b4e9ab14e94d263795c7991e160
 	/*
 	 *  Determine the hard disk geometry from the BIOS!
 	 *  We do this first, so that LS-120 IDE floppies work correctly.
@@ -342,8 +420,7 @@ setup_sectors:
 	jc	LOCAL(read_error)
 
 	movw	%es, %bx
-#endif /* ! ENABLE_TGRUB2 */
-/* End TCG Extension */
+#endif /* TPM */
 LOCAL(copy_buffer):
 
 	/*
@@ -367,89 +444,25 @@ LOCAL(copy_buffer):
 	popw	%ds
 	popa
 
-
-/* BEGIN TCG Extension */
-#ifdef ENABLE_TGRUB2
+#ifdef TPM
 	pusha
 
-	/* hash and measure 512 bytes at the beginning of kernel_address (diskboot.img) */
-
-	/* Check for TPM availability */
-/*
- * BIOS call "INT 1Ah, (AH)=BBh,(AL)=00h" TCG_StatusCheck
- *	Call with	%ah = 0xBB
- *				%al = 0x00
- *
- *	Return:	%eax = TCG_STATUS == 0 if the system supports the TCG BIOS calls.
- *			%ebx = 'TCPA'
- *
- * Ref:
- *  TCG PC Client Specific Implementation Specification for Conventional BIOS v1.21,
- *  Section 13.7 (page 115)
- */
-tcg_statuscheck:
-	movw    $0xBB00, %ax		/* TCG_StatusCheck */
-	int     $0x1A
-  test	%eax, %eax
-	jz	tcg_compacthashlogextendevent			/* if eax == 0 */
-	cmpb 	$0x24, %al   /* TCG_PC_TPM_DEACTIVATED */
-  jne  error_no_tpm
-
-error_tpm_deactivated:
-  MSG(deactivatedTPM_error_string)
-  jmp	LOCAL(general_error)
-error_no_tpm:
-	MSG(noTPM_error_string)
-	jmp	LOCAL(general_error)
-
-/*
- * BIOS call "INT 1Ah, (AH)=BBh, (AL)=07h" TCG_CompactHashLogExtendEvent
- *
- * Performs hashing of the event or the event data, extends the event to a PCR, and then
- * places the resulting TCG_PCClientPCREventStruc into the event log
- *
- * Call with	%ah = 0xBB
- *				%al = 0x07
- *				%es:%di = segment:offset of the pointer to the start of the data buffer to be hashed
- *				%esi = The informative value to be placed into the event field
- *				%ebx = 'TCPA'
- *				%ecx = The length, in bytes, of the buffer referenced by ES:DI
- *				%edx = The PCR number (PCRIndex) to which the hashed result is to be extended
- *
- * Return:		%eax = TCG_STATUS
- *				%edx = Event number of the event that was logged
- *
- * Ref:
- *  TCG PC Client Specific Implementation Specification for Conventional BIOS v1.21,
- *  Section 13.14 (page 126)
- */
-tcg_compacthashlogextendevent:
-
-	movw    $0xBB07, %ax			/* TCG_CompactHashLogExtendEvent */
-
-	movw	$0x0, %bx
-	movw	%bx, %es
-
-	movl	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %edi
-
-	xorl	%esi, %esi
-
-	movl    $0x41504354, %ebx	/* EBX = "TCPA" */
-	movl 	$0x200, %ecx		/* Length = 512 Byte */
-	movl	$0x8, %edx			/* PCR 8 */
-
-	int     $0x1A
+	movw	$0xBB00, %ax		/* TCG_StatusCheck */
+	int	$0x1A
 	test	%eax, %eax
-	jz		tcg_end				/* if eax != 0 */
-	MSG(tcg_error_string)
-	jmp	LOCAL(general_error)
+	jnz	boot			/* No TPM or TPM deactivated */
 
-tcg_end:
+	movw	$0xBB07, %ax		/* TCG_CompactHashLogExtendEvent */
+	movw	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %di
+	xorl	%esi, %esi
+	movl	$0x41504354, %ebx	/* TCPA */
+	movl	$0x200, %ecx		/* Measure 512 bytes */
+	movl	$0x8, %edx		/* PCR 8 */
+	int	$0x1A
+
+boot:
 	popa
-
-#endif /* ENABLE_TGRUB2 */
-/* END TCG Extension */
-
+#endif
 	/* boot kernel */
 	jmp	*(kernel_address)
 
