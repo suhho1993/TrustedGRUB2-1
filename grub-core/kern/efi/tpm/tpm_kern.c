@@ -103,7 +103,7 @@ typedef struct {
 
 //THIS IS GLOBAL VAR FOR EFI
 static grub_efi_guid_t tpm_guid = EFI_TPM_GUID;
-BOOLEAN tpm_present(efi_tpm_protocol_t *tpm)
+BOOLEAN tpm_present(grub_efi_tpm_protocol_t *tpm)
 {
 
 	grub_efi_status_t status;
@@ -133,7 +133,7 @@ grub_TPM_efi_hashLogExtendEvent(const grub_uint8_t * inDigest, grub_uint8_t pcrI
 	//TPM TESTING
 	grub_printf(" grub_TPM_efi_hashLogExtendEvent \n");
 	grub_efi_status_t status;
-	efi_tpm_protocol_t *tpm;
+	grub_efi_tpm_protocol_t *tpm;
 
 	grub_uint32_t algorithm, eventnum = 0;
 	grub_addr_t lastevent;
@@ -283,7 +283,7 @@ grub_TPM_efi_statusCheck( grub_uint32_t* returnCode, const grub_uint8_t* major, 
 {
 	//TPM TESTING
 	grub_printf("grub_TPM_efi_statusCheck \n");
-	efi_tpm_protocol_t *tpm;
+	grub_efi_tpm_protocol_t *tpm;
 	grub_efi_status_t status;
 	TCG_EFI_BOOT_SERVICE_CAPABILITY caps;
 
@@ -337,7 +337,7 @@ grub_TPM_efi_passThroughToTPM
 	//TPM TESTING
 	grub_printf("grub_TPM_efi_passThroughToTPM \n");
 	grub_efi_status_t status;
-	efi_tpm_protocol_t *tpm = NULL;
+	grub_efi_tpm_protocol_t *tpm = NULL;
 	grub_efi_handle_t *handles;
 	grub_efi_handle_t tpm_handle;
 	grub_efi_uintn_t num_handles;

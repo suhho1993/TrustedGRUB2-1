@@ -126,10 +126,7 @@ kernel = {
   common = kern/rescue_parser.c;
   common = kern/rescue_reader.c;
   common = kern/term.c;
-<<<<<<< HEAD
   common = kern/sha1.c;
-=======
->>>>>>> 6782f6d431d22b4e9ab14e94d263795c7991e160
   common = kern/tpm.c;
 
   noemu = kern/compiler-rt.c;
@@ -1800,10 +1797,7 @@ module = {
   name = linuxefi;
   efi = loader/i386/efi/linux.c;
   efi = lib/cmdline.c;
-<<<<<<< HEAD
   efi = loader/efi/linux.c;
-=======
->>>>>>> 6782f6d431d22b4e9ab14e94d263795c7991e160
   enable = i386_efi;
   enable = x86_64_efi;
 };
@@ -2442,7 +2436,7 @@ module = {
   x86_64_efi = kern/tpm.c;
 
   enable = x86_64_efi;
-}
+};
 
 module = {
   name = fwconfig;

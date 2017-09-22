@@ -864,7 +864,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 #ifdef __x86_64__
   if (grub_le_to_cpu16 (linux_params.version) < 0x0208 &&
       ((grub_addr_t) grub_efi_system_table >> 32) != 0) {
-	  grub_free(kernelBuf);
+	  grub_free(kernel);
 	  return grub_error(GRUB_ERR_BAD_OS,
 	  		      "kernel does not support 64-bit addressing");
   }
@@ -1054,18 +1054,16 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       //TPM TESTING
       grub_printf("loader/i386/linux.c \n");
       DEBUG_PRINT( ("measured linux kernel: \n") );
-      grub_TPM_measure_buffer( kernelBuf, file->size, TPM_LOADER_MEASUREMENT_PCR );
+      grub_TPM_measure_buffer( kernel, file->size, TPM_LOADER_MEASUREMENT_PCR );
     }
 
  fail:
 
-  grub_free (kernel);
-
   if (file)
     grub_file_close (file);
 
-  if(kernelBuf) {
-	  grub_free(kernelBuf);
+  if(kernel) {
+	  grub_free(kernel);
   }
   /* End TCG Extension */
 

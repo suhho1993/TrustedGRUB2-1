@@ -2,9 +2,9 @@
 #include <grub/i18n.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
-#include <grub/efi/tpm.h>
 #include <grub/mm.h>
 #include <grub/tpm.h>
+#include <grub/efi/tpm.h>
 #include <grub/term.h>
 
 static grub_efi_guid_t tpm_guid = EFI_TPM_GUID;

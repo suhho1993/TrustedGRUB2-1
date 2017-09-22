@@ -44,36 +44,6 @@ struct linux_kernel_params *params;
 static char *linux_cmdline;
 
 #define BYTES_TO_PAGES(bytes)   (((bytes) + 0xfff) >> 12)
-#define SHIM_LOCK_GUID \
-  { 0x605dab50, 0xe046, 0x4300, {0xab, 0xb6, 0x3d, 0xd8, 0x10, 0xdd, 0x8b, 0x23} }
-
-struct grub_efi_shim_lock
-{
-  grub_efi_status_t (*verify) (void *buffer, grub_uint32_t size);
-};
-typedef struct grub_efi_shim_lock grub_efi_shim_lock_t;
-
-static grub_efi_boolean_t
-grub_linuxefi_secure_validate (void *data, grub_uint32_t size)
-{
-  grub_efi_guid_t guid = SHIM_LOCK_GUID;
-  grub_efi_shim_lock_t *shim_lock;
-
-  shim_lock = grub_efi_locate_protocol(&guid, NULL);
-
-  if (!shim_lock) {
-    if (grub_efi_secure_boot())
-      return 0;
-    else
-      return 1;
-  }
-
-  if (shim_lock->verify(data, size) == GRUB_EFI_SUCCESS)
-    return 1;
-
-  return 0;
-}
-
 typedef void(*handover_func)(void *, grub_efi_system_table_t *, struct linux_kernel_params *);
 
 static grub_err_t

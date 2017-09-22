@@ -326,7 +326,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 					   GRUB_LINUX_CL_OFFSET
 					   + maximal_cmdline_size);
     if (err) {
-    	grub_free(kernelBuf);
+    	grub_free(kernel);
     	return err;
     }
 
@@ -370,7 +370,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 					   grub_linux_prot_target,
 					   grub_linux16_prot_size);
     if (err) {
-    	grub_free( kernelBuf);
+    	grub_free( kernel);
     	return err;
     }
 
@@ -386,18 +386,16 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       grub_loader_set (grub_linux16_boot, grub_linux_unload, 0);
       loaded = 1;
       DEBUG_PRINT( ("measured linux16 kernel: \n") );
-      grub_TPM_measure_buffer( kernelBuf, file->size, TPM_LOADER_MEASUREMENT_PCR );
+      grub_TPM_measure_buffer( kernel, file->size, TPM_LOADER_MEASUREMENT_PCR );
     }
 
  fail:
 
-  grub_free (kernel);
-
   if (file)
     grub_file_close (file);
 
-  if(kernelBuf) {
-	  grub_free(kernelBuf);
+  if(kernel) {
+	  grub_free(kernel);
   }
   /* End TCG Extension */
 

@@ -1063,7 +1063,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
        grub_strncmp( cmdname, "submenu", grub_strlen( "submenu" ) ) != 0 &&
        grub_strncmp( cmdname, "[", grub_strlen( "[" ) ) != 0 ) {
 
-	  unsigned int i, commandAndArgsLength;
+	  unsigned int commandAndArgsLength;
 	  commandAndArgsLength = grub_strlen(cmdname);
 	  for( i = 1; i < argv.argc; i++  ) {
           /* calculate command length */

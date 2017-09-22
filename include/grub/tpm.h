@@ -135,3 +135,4 @@ static inline grub_err_t grub_tpm_log_event(
 #endif
 
 #endif
+#endif

@@ -171,7 +171,19 @@ struct grub_efi_tpm2_protocol
 
 typedef struct grub_efi_tpm2_protocol grub_efi_tpm2_protocol_t;
 
+/************************* functions *************************/
+
+/* Invokes TCG_StatusCheck */
+grub_err_t EXPORT_FUNC(grub_TPM_efi_statusCheck)( grub_uint32_t* returnCode, const grub_uint8_t* major, const grub_uint8_t* minor, grub_uint32_t* featureFlags, grub_addr_t* eventLog, grub_addr_t* edi);
+
+BOOLEAN EXPORT_FUNC(tpm_present)(grub_efi_tpm_protocol_t *tpm);
+
+grub_efi_status_t EXPORT_FUNC(grub_TPM_efi_hashLogExtendEvent)(const grub_uint8_t * inDigest, grub_uint8_t pcrIndex, const char* descriptions );
+
+/* pass commands to TPM */
+grub_efi_status_t EXPORT_FUNC(grub_TPM_efi_passThroughToTPM) ( const PassThroughToTPM_InputParamBlock* input,
+        PassThroughToTPM_OutputParamBlock* output );
+
 #define TCG_ALG_SHA 0x00000004
 
 #endif
->>>>>>> 6782f6d431d22b4e9ab14e94d263795c7991e160
