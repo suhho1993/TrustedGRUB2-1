@@ -227,6 +227,7 @@ kernel = {
   i386_pc = kern/i386/pc/tpm/tpm_kern.c;
 
   x86_64_efi = kern/efi/tpm/tpm_kern.c;
+  x86_64_efi = kern/tpm.c;
 
   i386_qemu = bus/pci.c;
   i386_qemu = kern/vga_init.c;
